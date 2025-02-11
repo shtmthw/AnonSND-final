@@ -68,8 +68,8 @@ export async function POST(request: Request) {
       port: 587,
       secure: false,
       auth: {
-        user: "mathiwasbaroi@gmail.com",  // Must match "from"
-        pass: "etel rtpl zgip lwbn",
+        user: "",  // Must match "from"
+        pass: "",
       }
     });
 
@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     try {
 
       await transporter.sendMail({
-        from: "mathiwasbaroi@gmail.com",  // Ensure this matches SMTP_USER
+        from: "",  // Ensure this matches SMTP_USER
         to: email,
         subject: `OTP code for AnonSND user`,
         html: `
