@@ -1,22 +1,28 @@
 import { Resend } from "resend";
-import { OTPcodeEmail } from "../../emailTemps/validationCode";
+import ReactDOMServer from "react-dom/server";
+import { Email } from "../../emailTemps/validationCode";  // Your email component
 import { Apiresp } from "@/types/ApiResp";
 
 // Create an instance of Resend
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend("re_GaBB6vaN_7zdt8CsbPepVDxBvtkAMQ5qU");
 
 export async function sendVerificationEmail(
   username: string,
   email: string,
-  otp: string
+  verifyCode: string
 ): Promise<Apiresp> {
   try {
-    // Send the email using the React component directly
+    // Render the React component to static HTML
+    const htmlContent = ReactDOMServer.renderToStaticMarkup(
+      <Email username={username} otp={verifyCode} />
+    );
+
+    // Send the email using the rendered HTML content
     await resend.emails.send({
       from: "hqAnonSnd@gmail.com",
       to: email,
       subject: "AnonSnd OTP code",
-      react: <OTPcodeEmail username={username} otp={otp} />, // Pass the React component directly
+      html: htmlContent, // Send the static HTML string
     });
 
     return { success: true, message: "Sent OTP email" };

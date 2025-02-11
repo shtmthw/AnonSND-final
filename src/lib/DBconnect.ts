@@ -1,25 +1,28 @@
-import mong from 'mongoose'
+import mongoose from 'mongoose';
 
-type connectionObj = {
-    isCon? :Number
+type ConnectionObj = {
+    isCon: number;
+};
+
+const connection: ConnectionObj = { isCon: 0 };
+
+async function DBconnect(): Promise<void> {
+    if (connection.isCon) {
+        console.log('Already Connected!');
+        return; // Prevents unnecessary reconnections
+    }
+
+    try {
+        const DB = await mongoose.connect("mongodb+srv://Matthew:1234@main.0fbro.mongodb.net/?retryWrites=true&w=majority&appName=MAIN", {
+            dbName: 'MAIN', // Specify the database name
+        });
+
+        connection.isCon = DB.connections[0].readyState; // Set connection state
+        console.log('Connected successfully');
+    } catch (e) {
+        console.error('Error Connecting To Database:', e);
+        process.exit(1); // Exit process on failure
+    }
 }
 
-const connection : connectionObj = {
-} 
-
-async function DBconnet():Promise<void> {
-    if(connection.isCon){
-        console.log('Already Connected!')
-    }
-    try{
-        const DB = await mong.connect('PuT DaTaBaSee UrL WiTh .Env')
-        connection.isCon = DB.connections[0].readyState
-
-        console.log('connected successfully')
-    }catch(e){
-        console.log('Error Connecting To Database', e)
-        process.exit(1)
-    }
-}
-
-export default DBconnet
+export default DBconnect;
