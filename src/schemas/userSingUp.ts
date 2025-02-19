@@ -1,5 +1,5 @@
 import {z} from  'zod'
-const userNameVal = z.string().min(3).max(12)
+export const userNameVal = z.string().min(3).max(12)
 
 export const userSchema =z.object({
     username : userNameVal,

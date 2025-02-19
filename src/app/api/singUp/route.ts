@@ -2,7 +2,6 @@ import { NextResponse } from 'next/server';
 import DBconnect from "@/lib/DBconnect";
 import { UserModel } from "@/model/user";
 import bcrypt from "bcryptjs";
-import { sendVerificationEmail } from "@/helpers/sendOtpEmail";
 import nodemailer from 'nodemailer'
 import dotenv from "dotenv";
 dotenv.config();
@@ -20,29 +19,76 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: "mathiwasbaroi@gmail.com",  // Must match "from"
+        pass: "etel rtpl zgip lwbn",
+      }
+    });
 
-    // Check if the email already exists
+    // Check if username is taken, important cause its a social app, dumbbo
+
+    const isUsernameTaken = await UserModel.findOne({ username })
     const isEmailExisting = await UserModel.findOne({ email });
 
-    if (isEmailExisting) {
+    if (isUsernameTaken && !isEmailExisting) {
+      return NextResponse.json({
+        success: false,
+        msg: "User name already in use!"
+      })
+    }
+
+    // Check if the email already exists
+
+
+    if (isEmailExisting && isUsernameTaken || isEmailExisting && !isUsernameTaken) {
       const passwordMatching = await bcrypt.compare(password, isEmailExisting.password);
 
-      if (isEmailExisting.isVerified && passwordMatching) {
+      if(!passwordMatching){
         return NextResponse.json(
+          { success: false, msg: "Password Missmatch" },
+          { status: 400 }
+        );
+      }
+
+      if (isEmailExisting.isVerified === true) {
+        return NextResponse.json( 
           { success: false, msg: "Email is in use and verified." },
           { status: 400 }
         );
-      } else if (!isEmailExisting.isVerified && passwordMatching) {
+      }
+      if (!isEmailExisting.isVerified) {
+        try {
+          const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
+          const codeExpiringDate = new Date(Date.now() + 3600000);
+          isEmailExisting.verifyCode = verifyCode
+          isEmailExisting.verifyCodeExpiry = codeExpiringDate
+          await isEmailExisting.save()
+
+          await transporter.sendMail({
+            from: "mathiwasbaroi@gmail.com",  // Ensure this matches SMTP_USER
+            to: email,
+            subject: `OTP code renet for AnonSND user`,
+            html: `
+              <p>Hello ${username},</p>
+              <p>Email: ${email}</p>
+              <p>Here is your OTP, always verify!:</p>
+              <h2>${verifyCode}</h2>
+              <p>This code expires in 15 minutes, keep in mind.</p>
+            `,
+          });
+    
+        } catch (error) {
+          return NextResponse.json({ message: "COULD NOT SEND MESSAGE", error: error }, { status: 500 })
+        }
         return NextResponse.json(
           { success: false, msg: "Email in use and is not verified, check your email for the code." },
           { status: 400 }
         );
-      } else {
-        return NextResponse.json(
-          { success: false, msg: "Password incorrect" },
-          { status: 401 }
-        );
-      }
+      } 
     }
 
     // If email doesn't exist, create a new user
@@ -63,15 +109,6 @@ export async function POST(request: Request) {
 
     //node mailer alt, use if resend is bitching on you :')
 
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 587,
-      secure: false,
-      auth: {
-        user: "mathiwasbaroi@gmail.com",  // Must match "from"
-        pass: "etel rtpl zgip lwbn",
-      }
-    });
 
     // send mail
     try {
@@ -90,7 +127,7 @@ export async function POST(request: Request) {
       });
 
     } catch (error) {
-        return NextResponse.json({ message: "COULD NOT SEND MESSAGE" , error : error } , {status : 500})
+      return NextResponse.json({ message: "COULD NOT SEND MESSAGE", error: error }, { status: 500 })
     }
 
     await newUser.save();
@@ -104,7 +141,7 @@ export async function POST(request: Request) {
     //   );
     // }
     return NextResponse.json(
-      { success: true, msg: "User successfully registered and verification email sent."},
+      { success: true, msg: "User successfully registered and verification email sent." },
       { status: 201 }
     );
   } catch (e) {

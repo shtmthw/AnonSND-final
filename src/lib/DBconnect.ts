@@ -13,7 +13,7 @@ async function DBconnect(): Promise<void> {
     }
 
     try {
-        const DB = await mongoose.connect("mongodb+srv://Matthew:1234@main.0fbro.mongodb.net/?retryWrites=true&w=majority&appName=MAIN", {
+        const DB = await mongoose.connect("mongodb+srv://Matthew:1234@main.0fbro.mongodb.net/", {
             dbName: 'MAIN', // Specify the database name
         });
 

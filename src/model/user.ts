@@ -42,7 +42,7 @@ const userSchema : Schema<User> = new Schema({
         required : true
     },
     isVerified:{
-        type : String,
+        type : Boolean,
         required : true
     },
     verifyCode : {
