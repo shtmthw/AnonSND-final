@@ -17,7 +17,7 @@ export const authOptions: NextAuthOptions = {
                 await DBconnect();
                 try {
                     const user = await UserModel.findOne({
-                        $or: [{ email: credentials.identifier }] // Fixed field
+                        $or: [{ email: credentials.email }] // Fixed field
                     });
 
                     if (!user) {
@@ -63,7 +63,7 @@ export const authOptions: NextAuthOptions = {
         }
     },
     pages: {
-        signIn: '/signIn' // Fixed typo
+        signIn: '/sign-in' // Fixed typo,\,
     },
     session: {
         strategy: 'jwt'
