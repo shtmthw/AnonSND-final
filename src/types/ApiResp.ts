@@ -2,7 +2,7 @@ import { Messages } from "@/model/user";
 
 export interface Apiresp{
     success : Boolean,
-    message : String,
+    msg : string,
     isAccpetingMsg?: Boolean,
     messages? : Array<Messages>
 }

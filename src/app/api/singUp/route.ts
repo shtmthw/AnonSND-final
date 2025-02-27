@@ -87,6 +87,7 @@ export async function POST(request: Request) {
         return NextResponse.json(
           { success: false, msg: "Email in use and is not verified, check your email for the code." },
           { status: 400 }
+          
         );
       } 
     }
@@ -106,8 +107,6 @@ export async function POST(request: Request) {
       isVerified: false,
       messages: [],
     });
-
-    //node mailer alt, use if resend is bitching on you :')
 
 
     // send mail
