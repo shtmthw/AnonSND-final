@@ -31,20 +31,22 @@ export async function POST(request: Request) {
 
     // Check if username is taken, important cause its a social app, dumbbo
 
-    const isUsernameTaken = await UserModel.findOne({ username })
+    const isUsernameTaken = await UserModel.findOne({ username , isVerified : true})
     const isEmailExisting = await UserModel.findOne({ email });
 
-    if (isUsernameTaken && !isEmailExisting) {
-      return NextResponse.json({
-        success: false,
-        msg: "User name already in use!"
-      })
+    if (isUsernameTaken) {
+
+      return NextResponse.json( 
+        { success: false, msg: "Username in use." },
+        { status: 400 }
+      );
+
     }
 
     // Check if the email already exists
 
 
-    if (isEmailExisting && isUsernameTaken || isEmailExisting && !isUsernameTaken) {
+    if (isEmailExisting) {
       const passwordMatching = await bcrypt.compare(password, isEmailExisting.password);
 
       if(!passwordMatching){
@@ -54,13 +56,15 @@ export async function POST(request: Request) {
         );
       }
 
+
+     
       if (isEmailExisting.isVerified === true) {
         return NextResponse.json( 
           { success: false, msg: "Email is in use and verified." },
           { status: 400 }
         );
       }
-      if (!isEmailExisting.isVerified) {
+      if (!isEmailExisting.isVerified && passwordMatching) {
         try {
           const verifyCode = Math.floor(100000 + Math.random() * 900000).toString();
           const codeExpiringDate = new Date(Date.now() + 3600000);
