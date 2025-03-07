@@ -62,3 +62,4 @@ const userSchema : Schema<User> = new Schema({
 })
 
 export const UserModel = (mong.models.User as mong.Model<User>) || mong.model<User>('User' , userSchema)
+export const MessageModel = (mong.models.Message as mong.Model<Messages>) || mong.model<Messages>('Message' , msgSchema)

@@ -39,7 +39,8 @@ export async function GET(request : Request) {
                 }
                 return NextResponse.json({
                     success : true,
-                    msg : user[0].messages
+                    msg : "Successfully fetcheed messages",
+                    messages :  user[0].messages
                 }, {status : 200})
 
             } catch (error) {

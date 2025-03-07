@@ -3,6 +3,6 @@ import { Messages } from "@/model/user";
 export interface Apiresp{
     success : Boolean,
     msg : string,
-    isAccpetingMsg?: Boolean,
+    isAcceptingMsg?: Boolean,
     messages? : Array<Messages>
 }

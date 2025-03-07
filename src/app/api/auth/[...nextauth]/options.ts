@@ -4,7 +4,6 @@ import bcrypt from 'bcryptjs'
 import GoogleProvider from "next-auth/providers/google";
 import { UserModel } from '@/model/user'
 import DBconnect from '@/lib/DBconnect'
-import { any } from 'zod';
 interface Credentials {
     identifier: string;
     password: string; // Added password to the interface
