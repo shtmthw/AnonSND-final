@@ -1,6 +1,6 @@
 'use client'
-import React from 'react'
 
+import React from 'react'
 import {
     Card,
     CardContent,
@@ -27,36 +27,40 @@ import axios from 'axios'
 import { Apiresp } from '@/types/ApiResp'
 import { Messages } from '@/model/user'
 
-
-
-interface messagePanelProps {
-    message : Messages,
-    onMessageDelete :  (messageID : string) => void
+interface MessagePanelProps {
+    message: Messages,
+    onMessageDelete: (messageID: string) => void
 }
 
-export default function messagePanel( {message , onMessageDelete} : messagePanelProps ) {
-    
-    const handleDeleteConfirm = async() => {
-        const result = await axios.delete<Apiresp>('/')
+export default function MessagePanel({   message, onMessageDelete }: MessagePanelProps) {
 
-        toast(result.data.msg)
-
-        onMessageDelete(message._id as string)
+    const handleDeleteConfirm = async () => {
+        try {
+            const result = await axios.post('/api/delete-message', { messageID : message._id });
+            toast(result.data.msg);
+            onMessageDelete(message._id as string);
+        } catch (error) {
+            toast('Error while deleting the message');
+            console.log(error);
+        }
     }
-    
+
     return (
         <div>
             <Card>
                 <CardHeader>
-                    <CardTitle>Card Title</CardTitle>
+                    <CardTitle>{message.content}</CardTitle>
+                    <CardDescription>sent at : {message.date as any}</CardDescription>
+
                     <AlertDialog>
-                        <AlertDialogTrigger>Open</AlertDialogTrigger>
+                        <AlertDialogTrigger>
+                            <button className="btn btn-danger">Delete Message</button>
+                        </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
                                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    This action cannot be undone. This will permanently delete your account
-                                    and remove your data from our servers.
+                                    This action cannot be undone. This will permanently delete your message and remove it from our servers.
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
@@ -65,11 +69,8 @@ export default function messagePanel( {message , onMessageDelete} : messagePanel
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
-
-                    <CardDescription>Card Description</CardDescription>
                 </CardHeader>
-                <CardContent>
-                </CardContent>
+
             </Card>
         </div>
     )

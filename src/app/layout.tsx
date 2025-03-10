@@ -5,6 +5,8 @@ import "./globals.css";
 import AuthProvider from "@/context/AuthProvider";
 import { Toaster } from "@/components/ui/sonner"
 import { getServerSession } from 'next-auth';
+import Navbar from "./(app)/navbar/page";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -29,7 +31,6 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AuthProvider session={session}>
-          {/* {<Navbar/>} */}
           {children}          
           </AuthProvider>
         <Toaster />

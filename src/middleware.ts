@@ -42,7 +42,7 @@ export const config = {
     matcher: [
         '/sing-up',
         '/sign-in',
-        '/',
+        '/dd',
         '/dashboard/:path*',
         '/verify/:path*'
     ]

@@ -11,11 +11,12 @@ interface Credentials {
 
 export const authOptions: NextAuthOptions = {
     providers: [
+        //doesnt work either when using localhast shit ass
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID as string,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
             async profile(profile):Promise<any> {
-                console.log("Google Profile:", profile);
+                
                 await DBconnect()
                 try {
                     
@@ -30,7 +31,7 @@ export const authOptions: NextAuthOptions = {
                     }
 
                     return{
-                        id: user._id,
+                        _id: user._id,
                         email: user.email,
                         username: user.username,
                         isVerified: user.isVerified,
@@ -80,7 +81,7 @@ export const authOptions: NextAuthOptions = {
                     }
 
                     return {
-                        id: user._id,
+                        _id: user._id,
                         email: user.email,
                         username: user.username,
                         isVerified: user.isVerified,

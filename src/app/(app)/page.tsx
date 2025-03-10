@@ -1,100 +1,146 @@
-import Image from "next/image";
-export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+'use client'
+import React, { useEffect, useState } from 'react'
+import axios, { AxiosError } from 'axios'
+import { toast } from 'sonner'
+import { Apiresp } from '@/types/ApiResp'
+import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from "@/components/ui/card"
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
+import * as lr from 'lucide-react'
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+interface Messages {
+  content : string,
+  date : Date
+}
+
+export default function Landingpage() {
+
+  const route = useRouter()
+
+  interface formInter {
+    userUrl: string
+  }
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<formInter>()
+  const [isLoading , setIsLoading] = useState(false)
+  const [messages, setMessages] = useState<Messages[]>([])
+
+  const onFormSub = async (e: any) => {
+    // e.preventDefault()
+    setIsLoading(true)
+    try {
+      const urlA = watch('userUrl')
+      if (!urlA.includes('http://192.168.0.115:3000/send-Text?u=')) {
+        toast("Not a valid url")
+      }
+      const url = urlA;
+      const urlParams = new URLSearchParams(new URL(url).search);
+      const username = urlParams.get('u')
+
+      const resp = await axios.post('/api/check-User-Url', { username: username })
+
+      if (!resp.data.success) {
+        toast(resp.data.msg)
+      }
+      route.replace(`/send-Text?u=${resp.data.username}`)
+    } catch (error) {
+      const axiErr = error as AxiosError<Apiresp>
+      const Rerror = axiErr.response?.data.msg
+      toast(`Error : ${Rerror}`)
+    }finally{
+      setIsLoading(false)
+    }
+  }
+
+  const getMessages = async () => {
+    try {
+      const resp = await axios.get('/api/get-messages')
+      setMessages(resp.data.messages)
+      console.log(resp.data.messages)
+
+    } catch (error) {
+      const axiErr = error as AxiosError<Apiresp>
+      const Rerror = axiErr.response?.data.msg
+      toast(`Error while fetching messages : ${Rerror}`)
+    }
+  }
+
+  useEffect(() => {
+    getMessages()
+  }, [])
+
+  return (
+    <>
+      <div className="max-w-7xl mx-auto py-10 px-5">
+        <h1 className='text-3xl font-bold mb-4 text-center text-blue-600'>Welcome to ANONSND</h1>
+        <span className="text-lg text-gray-600 block text-center mb-8">Enjoy Our Anonymous Texting Service!!</span>
+
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-semibold text-gray-700">Send Messages Using a User URL</h2>
+          <form onSubmit={handleSubmit(onFormSub)} className="mt-4 flex justify-center items-center space-x-2">
+            <Input
+              placeholder='Put the user URL..'
+              className="w-full max-w-xs"
+              {...register("userUrl", { required: true })}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            {errors.userUrl && <span className="text-red-500 text-sm">This field is required</span>}
+            {isLoading?
+            <>
+              {<lr.Loader2/>}
+            </> : <>
+              <Button type='submit' className="bg-blue-600 text-white">Search</Button>
+            
+            </>}
+          </form>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+        <div>
+            <h1 style={{marginTop : '100px'}} className='text-3xl font-semibold mb-4 text-center text-black-600'>Your Inbox Below..</h1>
+        </div>
+        {/* Message Carousel */}
+        <div className="flex items-center justify-center h-screen bg-gray-100">
+          {messages.length !== 0 ? (
+            <Carousel className="w-full max-w-xs h-[400px]"> {/* Adjusted the height here */}
+              <CarouselContent>
+                {messages.map((item, index) => (
+                  <CarouselItem key={index}>
+                    <div className="p-1">
+                      <Card className="shadow-xl hover:shadow-2xl transition-all">
+                        <CardContent className="flex aspect-square items-center justify-center p-6">
+                          <span
+                            style={{ cursor: 'pointer' }}
+                            onClick={() => { route.replace('/dashboard') }}
+                            className="text-2xl font-semibold text-black-700 hover:text-blue-900"
+                          >
+                            {item.content}
+                          </span>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselNext />
+              <CarouselPrevious />
+            </Carousel>
+          ) : (
+            <div className="text-xl text-gray-700">No Messages To Show</div>
+          )}
+        </div>
+      </div>
+    </>
+  )
 }

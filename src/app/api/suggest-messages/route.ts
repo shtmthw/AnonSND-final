@@ -1,38 +1,54 @@
-import { openai } from '@ai-sdk/openai';
-import { streamText } from 'ai';
 import { NextResponse } from 'next/server';
-import OpenAI from 'openai';
+import axios, { AxiosError } from 'axios';
+import OpenAI from "openai";
+import DBconnect from '@/lib/DBconnect';
+
+//doesnt work mf needs money ass shit
+
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
-export async function POST(req: Request) {
+export async function GET(request: Request) {
+    await DBconnect()
     try {
+        const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/search';
+        const API_KEY = process.env.DEEPSEEK_API_KEY;
 
-        const prompt = "Create a list of three open-ended and engaging questions formatted as single string.Each qst should be separated by '|'.These qst are for an anonymous social messaging platform, like Qooh.me and should be suitable for a diverse audience.Avoid sensetive content, universal themes that encourage friendly convos should be at 100 % priority, i.e. 'If you could live as a footballer for a day who would that be ?|| What would be your everyday snack when on a diet ? || What dog breed is the most friendliest ?', ensure this at all cost, or our webapp might get called out for weird suggestions."
+        // Make sure API_KEY is available
+        if (!API_KEY) {
+            return NextResponse.json({
+                success: false,
+                msg: "API Key is missing"
+            }, { status: 400 });
+        }
 
-        const result = streamText({
-            model: openai("gpt-3.5-turbo"),
-            prompt,
-            maxTokens: 400
+
+        const openai = new OpenAI({
+            baseURL: 'https://api.deepseek.com',
+            apiKey: process.env.DEEPSEEK_API_KEY
         });
 
-        return result.toDataStreamResponse();
 
-    } catch (error) {
-        if (error instanceof OpenAI.APIError) {
-            const { name, status, headers, message } = error
-            return NextResponse.json({
-                name,
-                headers,
-                status,
-                message
-            }, { status })
-        } else {
-            console.error('An unexpected Error occured', error)
-            throw error
-        }
+        const completion = await openai.chat.completions.create({
+            messages: [{ role: "system", content: "You are a helpful assistant." }],
+            model: "deepseek-chat",
+        });
+        console.log(completion.choices[0].message.content)
+        return NextResponse.json({
+            success : false,
+            data : (completion.choices[0].message.content)
+        })
+
+
+
+    } catch (err) {
+        const error = err as Error
+        console.error('Error in handler:', error);
+
+        return NextResponse.json({
+            success: false,
+            msg: `Internal server error: ${error.message}`,
+        }, { status: 500 });
     }
-
 }
-

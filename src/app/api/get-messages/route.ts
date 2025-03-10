@@ -34,7 +34,7 @@ export async function GET(request : Request) {
                 if(!user || user.length === 0){
                     return NextResponse.json({
                         success : false,
-                        msg : 'User not found'
+                        msg : 'User has not recieved any texts.'
                     }, {status : 401})
                 }
                 return NextResponse.json({
